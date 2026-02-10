@@ -32,6 +32,22 @@ type ServerConfig struct {
 	IdleTimeout  time.Duration `envconfig:"SERVER_IDLE_TIMEOUT" default:"120s"`
 }
 
+type DatabaseConfig struct {
+	Host     string `envconfig:"DB_HOST" default:"localhost"`
+	Port     int    `envconfig:"DB_PORT" default:"5432"`
+	User     string `envconfig:"DB_USER" required:"true"`
+	Password string `envconfig:"DB_PASSWORD" required:"true"`
+	Name     string `envconfig:"DB_NAME" required:"true"`
+	SSLMode  string `envconfig:"DB_SSLMODE" default:"disable"`
+}
+
+func (d DatabaseConfig) DSN() string {
+	return fmt.Sprintf(
+		"postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		d.User, d.Password, d.Host, d.Port, d.Name, d.SSLMode,
+	)
+}
+
 // Load reads configuration from environment variables.
 // In Go, we return (value, error) rather than throwing exceptions.
 func Load() (*Config, error) {
